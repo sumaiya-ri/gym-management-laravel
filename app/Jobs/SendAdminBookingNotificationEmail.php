@@ -59,21 +59,26 @@ class SendAdminBookingNotificationEmail implements ShouldQueue
         }
 
         $gymId = $this->booking->gym_id ?? $timeslot->gym_id;
-
-        // Query the real gym admin user from users table
         $adminUser = User::where('gym_id', $gymId)->where('role', 'admin')->first();
 
-        if ($adminUser && $adminUser->email) {
-            Mail::to($adminUser->email)->send(new AdminBookingNotificationMail($this->booking));
-            Log::info("Admin booking notification email sent successfully to gym admin email {$adminUser->email} for booking ID: {$this->booking->id}");
-        } else {
-            // Fallback to gym table email if no admin user is found
-            $gym = $this->booking->gym ?? $timeslot->gym;
-            if ($gym && $gym->email) {
-                Mail::to($gym->email)->send(new AdminBookingNotificationMail($this->booking));
-                Log::info("Admin booking notification email sent successfully to fallback gym email {$gym->email} for booking ID: {$this->booking->id}");
+        try {
+            if ($adminUser && $adminUser->email) {
+                Mail::to($adminUser->email)->send(new AdminBookingNotificationMail($this->booking));
+                Log::info("Admin booking notification email sent successfully to gym admin email {$adminUser->email} for booking ID: {$this->booking->id}");
             } else {
-                Log::warning("Could not send admin booking notification email. Real gym admin and gym email are both missing for booking ID: {$this->booking->id}");
+                // Fallback to gym table email if no admin user is found
+                $gym = $this->booking->gym ?? $timeslot->gym;
+                if ($gym && $gym->email) {
+                    Mail::to($gym->email)->send(new AdminBookingNotificationMail($this->booking));
+                    Log::info("Admin booking notification email sent successfully to fallback gym email {$gym->email} for booking ID: {$this->booking->id}");
+                } else {
+                    Log::warning("Could not send admin booking notification email. Real gym admin and gym email are both missing for booking ID: {$this->booking->id}");
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error("Mail sending failed in SendAdminBookingNotificationEmail for booking ID: {$this->booking->id}. Error: " . $e->getMessage());
+            if (config('queue.default') !== 'sync') {
+                throw $e;
             }
         }
     }

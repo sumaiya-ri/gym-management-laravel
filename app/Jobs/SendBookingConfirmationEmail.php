@@ -56,9 +56,15 @@ class SendBookingConfirmationEmail implements ShouldQueue
             return;
         }
 
-        Mail::to($user->email)->send(new BookingConfirmationMail($this->booking));
-        
-        Log::info("Booking confirmation email sent successfully to member {$user->email} for booking ID: {$this->booking->id}");
+        try {
+            Mail::to($user->email)->send(new BookingConfirmationMail($this->booking));
+            Log::info("Booking confirmation email sent successfully to member {$user->email} for booking ID: {$this->booking->id}");
+        } catch (\Throwable $e) {
+            Log::error("Mail sending failed in SendBookingConfirmationEmail for booking ID: {$this->booking->id}. Error: " . $e->getMessage());
+            if (config('queue.default') !== 'sync') {
+                throw $e;
+            }
+        }
     }
 
     /**

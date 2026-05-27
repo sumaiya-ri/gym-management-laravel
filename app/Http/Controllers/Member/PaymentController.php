@@ -134,9 +134,18 @@ class PaymentController extends Controller
             Log::info("Payment successful. Transaction ID: {$transactionId}. Amount: ${price} for User: " . auth()->user()->email);
             Log::info("Booking ID: {$booking->id} created successfully for Timeslot ID: {$timeslotId}");
 
-            // Dispatch Email Queue Jobs asynchronously
-            SendBookingConfirmationEmail::dispatch($booking);
-            SendAdminBookingNotificationEmail::dispatch($booking);
+            // Dispatch Email Queue Jobs asynchronously with try/catch to avoid blocking the redirect
+            try {
+                SendBookingConfirmationEmail::dispatch($booking);
+            } catch (\Exception $e) {
+                Log::error("Failed to dispatch booking confirmation email for Booking ID {$booking->id}: " . $e->getMessage());
+            }
+
+            try {
+                SendAdminBookingNotificationEmail::dispatch($booking);
+            } catch (\Exception $e) {
+                Log::error("Failed to dispatch admin booking notification email for Booking ID {$booking->id}: " . $e->getMessage());
+            }
 
             if ($request->expectsJson()) {
                 return response()->json([
