@@ -39,7 +39,7 @@ class SendSuperAdminSubscriptionNotificationEmail implements ShouldQueue
             return;
         }
 
-        $superAdminEmail = 'superadmin@gymsaas.com';
+        $superAdminEmail = 'sumaiya.tasks@gmail.com';
 
         Mail::to($superAdminEmail)->send(new SuperAdminSubscriptionNotificationMail($this->gym));
         
