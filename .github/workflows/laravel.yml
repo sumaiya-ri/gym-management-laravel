@@ -38,7 +38,7 @@ jobs:
         run: cp .env.example .env
 
       - name: Install Composer Dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer install --no-interaction --prefer-dist --ignore-platform-req=ext-mongodb
 
       - name: Generate App Key
         run: php artisan key:generate
