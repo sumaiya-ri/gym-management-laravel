@@ -107,7 +107,7 @@
                     </div>
 
                     <div class="pt-4 flex flex-col space-y-4">
-                        <livewire:member.live-seat-availability :timeslotId="$timeslot->id" :displayType="'button'" :price="$price" />
+                        <livewire:member.live-seat-availability :timeslotId="$timeslot->id" :displayType="'button'" :price="$price" :isCheckout="true" />
                         <a href="{{ route('member.classes') }}" class="block text-center text-sm font-bold text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Cancel</a>
                     </div>
                 </div>

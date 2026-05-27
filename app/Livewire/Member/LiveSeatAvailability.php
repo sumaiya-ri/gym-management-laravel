@@ -10,6 +10,7 @@ class LiveSeatAvailability extends Component
     public $timeslotId;
     public $displayType = 'badge'; // 'badge' or 'button'
     public $price = 0.00;
+    public $isCheckout = false;
 
     public function render()
     {
