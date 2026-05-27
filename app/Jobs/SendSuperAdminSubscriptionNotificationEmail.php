@@ -18,7 +18,7 @@ class SendSuperAdminSubscriptionNotificationEmail implements ShouldQueue
 
     protected $gym;
 
-    public $tries = 3;
+    public $tries = 1;
     public $backoff = [10, 30, 60];
 
     /**
@@ -40,7 +40,7 @@ class SendSuperAdminSubscriptionNotificationEmail implements ShouldQueue
         }
 
         $superAdminEmail = 'sumaiyarifkan2@gmail.com';
-
+        sleep(2);
         Mail::to($superAdminEmail)->send(new SuperAdminSubscriptionNotificationMail($this->gym));
         
         Log::info("SaaS Super Admin notification email sent successfully for Gym ID: {$this->gym->id}");

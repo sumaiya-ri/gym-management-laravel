@@ -20,7 +20,7 @@ class SendSubscriptionConfirmationEmail implements ShouldQueue
     protected $gym;
     protected $user;
 
-    public $tries = 3;
+    public $tries = 1;
     public $backoff = [10, 30, 60];
 
     /**
@@ -46,7 +46,7 @@ class SendSubscriptionConfirmationEmail implements ShouldQueue
             Log::error("SendSubscriptionConfirmationEmail failed: Admin user email is missing.");
             return;
         }
-
+       sleep(2);
         Mail::to($this->user->email)->send(new SubscriptionConfirmationMail($this->gym, $this->user));
         
         Log::info("SaaS Subscription confirmation email sent successfully to Gym Admin {$this->user->email} for Gym ID: {$this->gym->id}");
