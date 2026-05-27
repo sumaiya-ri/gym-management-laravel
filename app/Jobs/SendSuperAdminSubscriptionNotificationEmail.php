@@ -19,7 +19,6 @@ class SendSuperAdminSubscriptionNotificationEmail implements ShouldQueue
     protected $gym;
 
     public $tries = 1;
-    public $backoff = [10, 30, 60];
 
     /**
      * Create a new job instance.
@@ -40,11 +39,14 @@ class SendSuperAdminSubscriptionNotificationEmail implements ShouldQueue
         }
 
         $superAdminEmail = 'sumaiyarifkan2@gmail.com';
-        sleep(2);
-        Mail::to($superAdminEmail)->send(new SuperAdminSubscriptionNotificationMail($this->gym));
-        
-        Log::info("SaaS Super Admin notification email sent successfully for Gym ID: {$this->gym->id}");
-    } 
+
+        // TEMPORARILY DISABLED TO AVOID MAILTRAP RATE LIMIT
+        // Mail::to($superAdminEmail)->send(
+        //     new SuperAdminSubscriptionNotificationMail($this->gym)
+        // );
+
+        Log::info("Super admin email temporarily disabled for demo/testing.");
+    }
 
     /**
      * Handle a job failure.
@@ -53,8 +55,11 @@ class SendSuperAdminSubscriptionNotificationEmail implements ShouldQueue
     {
         $gymId = $this->gym ? $this->gym->id : 'Unknown';
 
-        Log::error("SaaS Super Admin notification email job failed. Gym ID: {$gymId}. Error: {$exception->getMessage()}", [
-            'exception' => $exception
-        ]);
+        Log::error(
+            "SaaS Super Admin notification email job failed. Gym ID: {$gymId}. Error: {$exception->getMessage()}",
+            [
+                'exception' => $exception
+            ]
+        );
     }
 }
