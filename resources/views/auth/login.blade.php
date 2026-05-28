@@ -43,6 +43,10 @@
                     {{ __('Log in') }}
                 </x-button>
             </div>
+
+            <div class="mt-6 text-center text-sm font-medium text-gray-500 border-t border-gray-100 pt-4">
+                Gym Member? <a href="{{ route('member.login') }}" class="text-indigo-600 font-bold hover:underline">Sign In with Google</a>
+            </div>
         </form>
     </x-authentication-card>
 </x-guest-layout>

@@ -36,6 +36,9 @@ class User extends Authenticatable
 
         'gym_id',
         'role',
+        'google_id',
+        'avatar',
+        'oauth_provider',
     ];
 
 

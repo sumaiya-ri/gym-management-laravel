@@ -45,4 +45,12 @@ class MemberAuthController extends Controller
 
         return redirect()->route('member.dashboard');
     }
+
+    /**
+     * Show the member login form.
+     */
+    public function showLogin()
+    {
+        return view('auth.member-login');
+    }
 }

@@ -41,6 +41,11 @@ Route::get('/saas/failed/{gym}', [SaasSubscriptionController::class, 'showFailed
 // Member Registration Routes (Public)
 Route::get('/member/register', [MemberAuthController::class, 'showRegister'])->name('member.register');
 Route::post('/member/register', [MemberAuthController::class, 'register']);
+Route::get('/member/login', [MemberAuthController::class, 'showLogin'])->name('member.login');
+
+Route::get('/auth/google/redirect', [\App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])->name('auth.google.redirect');
+Route::post('/auth/google/redirect', [\App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])->name('auth.google.redirect.post');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 Route::middleware([
     'auth:sanctum',
