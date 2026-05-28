@@ -172,13 +172,13 @@ class GoogleOAuthTest extends TestCase
     }
 
     /**
-     * Test standard password login form blocks members from authenticating.
+     * Test standard password login form allows members to authenticate.
      */
-    public function test_standard_login_blocks_members_from_logging_in(): void
+    public function test_standard_login_allows_members_to_log_in(): void
     {
         $member = User::create([
-            'name' => 'Member Blocked',
-            'email' => 'blocked.member@gmail.com',
+            'name' => 'Member Allowed',
+            'email' => 'allowed.member@gmail.com',
             'password' => bcrypt('password'),
             'role' => 'member',
             'gym_id' => $this->gym->id,
@@ -186,14 +186,12 @@ class GoogleOAuthTest extends TestCase
         ]);
 
         $response = $this->post('/login', [
-            'email' => 'blocked.member@gmail.com',
+            'email' => 'allowed.member@gmail.com',
             'password' => 'password',
         ]);
 
-        $response->assertSessionHasErrors([
-            'email' => 'Members must log in using Google OAuth.'
-        ]);
-        $this->assertGuest();
+        $response->assertRedirect(route('dashboard'));
+        $this->assertAuthenticatedAs($member);
     }
 
     /**

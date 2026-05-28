@@ -3,21 +3,69 @@
         <div class="w-full sm:max-w-md mt-6 px-8 py-10 bg-white shadow-2xl overflow-hidden sm:rounded-3xl border border-purple-100">
             <div class="text-center mb-8">
                 <div class="bg-gradient-to-br from-purple-500 to-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-200">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                    </svg>
                 </div>
                 <h2 class="text-2xl font-black text-gray-900 tracking-tight">Member Sign In</h2>
                 <p class="text-sm text-gray-500 mt-2 font-medium">Access your <span class="text-purple-600 font-bold">GymGlow</span> member portal</p>
             </div>
 
-            <!-- Error Alerts -->
+            <x-validation-errors class="mb-4" />
+
             @if(session('error'))
                 <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl text-sm text-red-700 font-medium">
                     {{ session('error') }}
                 </div>
             @endif
 
-            <div class="space-y-6">
-                <!-- Google Button -->
+            <form method="POST" action="{{ route('login') }}" class="space-y-4">
+                @csrf
+
+                <!-- Email -->
+                <div>
+                    <x-label for="email" value="{{ __('Email Address') }}" class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1" />
+                    <x-input id="email" class="block w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 rounded-xl px-4 py-3 bg-white text-gray-700" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="john@example.com" />
+                </div>
+
+                <!-- Password -->
+                <div class="mt-4">
+                    <x-label for="password" value="{{ __('Password') }}" class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1" />
+                    <x-input id="password" class="block w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 rounded-xl px-4 py-3 bg-white text-gray-700" type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between mt-4">
+                    <label for="remember_me" class="flex items-center">
+                        <x-checkbox id="remember_me" name="remember" class="rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
+                        <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+                    </label>
+
+                    @if (Route::has('password.request'))
+                        <a class="underline text-sm text-gray-600 hover:text-purple-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500" href="{{ route('password.request') }}">
+                            {{ __('Forgot password?') }}
+                        </a>
+                    @endif
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2">
+                    <button type="submit" class="flex items-center justify-center gap-2 w-full py-4 bg-gray-900 hover:bg-gray-800 active:scale-95 text-white font-bold rounded-2xl shadow-lg transition-all">
+                        <span>Sign In</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Divider -->
+                <div class="relative flex py-2 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase tracking-wider">or</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                <!-- Google OAuth Button -->
                 <div>
                     <a href="{{ route('auth.google.redirect') }}" class="flex items-center justify-center gap-3 w-full py-4 border border-gray-300 rounded-2xl font-bold text-gray-700 bg-white hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
                         <svg class="w-5 h-5" viewBox="0 0 24 24">
@@ -30,16 +78,10 @@
                     </a>
                 </div>
 
-                <div class="relative flex py-2 items-center">
-                    <div class="flex-grow border-t border-gray-200"></div>
-                    <span class="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase tracking-wider">GymGlow Portal</span>
-                    <div class="flex-grow border-t border-gray-200"></div>
-                </div>
-
-                <div class="text-center text-sm font-medium text-gray-500">
+                <div class="mt-6 text-center text-sm font-medium text-gray-500">
                     Not a member yet? <a href="{{ route('member.register') }}" class="text-purple-600 font-bold hover:underline">Register Here</a>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 </x-guest-layout>

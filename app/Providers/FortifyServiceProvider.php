@@ -38,12 +38,6 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::authenticateUsing(function (Request $request) {
             $user = \App\Models\User::where('email', $request->email)->first();
 
-            if ($user && $user->role === 'member') {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    Fortify::username() => __('Members must log in using Google OAuth.'),
-                ]);
-            }
-
             if ($user && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
                 return $user;
             }
