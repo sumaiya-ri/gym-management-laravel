@@ -78,8 +78,10 @@ class GoogleController extends Controller
                 'oauth_provider' => 'google',
             ]);
 
-            Auth::login($user);
+            Auth::login($user, true);
+            session()->regenerate();
             session()->forget('oauth_gym_id');
+            session()->save();
 
             return redirect()->route('member.dashboard');
         }
@@ -118,8 +120,10 @@ class GoogleController extends Controller
             Log::error("Failed to dispatch welcome email for user {$user->id}: " . $e->getMessage());
         }
 
-        Auth::login($user);
+        Auth::login($user, true);
+        session()->regenerate();
         session()->forget('oauth_gym_id');
+        session()->save();
 
         return redirect()->route('member.dashboard');
     }
