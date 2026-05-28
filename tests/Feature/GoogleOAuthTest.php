@@ -195,4 +195,40 @@ class GoogleOAuthTest extends TestCase
         ]);
         $this->assertGuest();
     }
+
+    /**
+     * Test callback falls back to stateless mode if state validation throws InvalidStateException.
+     */
+    public function test_google_callback_falls_back_to_stateless_on_invalid_state(): void
+    {
+        Queue::fake();
+
+        $mockUser = \Mockery::mock(SocialiteUser::class);
+        $mockUser->shouldReceive('getId')->andReturn('google-unique-id-stateless');
+        $mockUser->shouldReceive('getName')->andReturn('Stateless User');
+        $mockUser->shouldReceive('getEmail')->andReturn('stateless.member@gmail.com');
+        $mockUser->shouldReceive('getAvatar')->andReturn('https://lh3.googleusercontent.com/avatar');
+
+        $mockProvider = \Mockery::mock(\Laravel\Socialite\Two\GoogleProvider::class);
+        // First stateful call throws InvalidStateException
+        $mockProvider->shouldReceive('user')->once()->andThrow(new \Laravel\Socialite\Two\InvalidStateException());
+        // Then it should switch to stateless mode and try again
+        $mockProvider->shouldReceive('stateless')->once()->andReturnSelf();
+        $mockProvider->shouldReceive('user')->once()->andReturn($mockUser);
+
+        Socialite::shouldReceive('driver')->with('google')->twice()->andReturn($mockProvider);
+
+        session(['oauth_gym_id' => $this->gym->id]);
+
+        $response = $this->get(route('auth.google.callback'));
+
+        $response->assertRedirect(route('member.dashboard'));
+        $this->assertAuthenticated();
+
+        $user = User::where('email', 'stateless.member@gmail.com')->first();
+        $this->assertNotNull($user);
+        $this->assertEquals('member', $user->role);
+        $this->assertEquals('google-unique-id-stateless', $user->google_id);
+    }
 }
+

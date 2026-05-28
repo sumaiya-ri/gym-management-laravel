@@ -36,9 +36,23 @@ class GoogleController extends Controller
     public function handleGoogleCallback()
     {
         try {
+            // Attempt standard stateful OAuth first
             $googleUser = Socialite::driver('google')->user();
+        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+            // If state check fails (common behind proxies or due to browser session drops), fallback to stateless
+            Log::warning("Google OAuth state validation failed. Falling back to stateless mode.");
+            try {
+                $googleUser = Socialite::driver('google')->stateless()->user();
+            } catch (\Exception $subException) {
+                Log::error("Google OAuth callback failed in stateless fallback: " . $subException, [
+                    'exception' => $subException
+                ]);
+                return redirect()->route('member.login')->with('error', 'Google authentication failed. Please try again.');
+            }
         } catch (\Exception $e) {
-            Log::error("Google OAuth callback failed: " . $e->getMessage());
+            Log::error("Google OAuth callback failed: " . $e, [
+                'exception' => $e
+            ]);
             return redirect()->route('member.login')->with('error', 'Google authentication failed. Please try again.');
         }
 
