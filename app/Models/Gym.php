@@ -15,6 +15,11 @@ class Gym extends Model
         'subscription_status',
         'subscription_expires_at',
         'subscription_transaction_id',
+        'stripe_session_id',
+        'payment_method',
+        'transaction_reference',
+        'amount_paid',
+        'payment_at',
     ];
 
     public function services()

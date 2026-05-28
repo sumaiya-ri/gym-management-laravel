@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Gym;
 use App\Services\MongoDBService;
+use App\Services\StripeService;
 use App\Jobs\SendSubscriptionConfirmationEmail;
 use App\Jobs\SendSuperAdminSubscriptionNotificationEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -21,6 +23,13 @@ class SaasSubscriptionController extends Controller
         'Professional' => 59.00,
         'Enterprise' => 99.00,
     ];
+
+    protected $stripeService;
+
+    public function __construct(StripeService $stripeService)
+    {
+        $this->stripeService = $stripeService;
+    }
 
     /**
      * Show SaaS pricing and subscription plans.
@@ -96,8 +105,9 @@ class SaasSubscriptionController extends Controller
         $gym = Gym::findOrFail($gymId);
         $plan = $gym->subscription_plan ?? 'Starter';
         $price = self::$plans[$plan];
+        $stripeEnabled = $this->stripeService->isEnabled();
 
-        return view('saas.checkout', compact('gym', 'plan', 'price'));
+        return view('saas.checkout', compact('gym', 'plan', 'price', 'stripeEnabled'));
     }
 
     /**
@@ -108,6 +118,25 @@ class SaasSubscriptionController extends Controller
         $gym = Gym::findOrFail($gymId);
         $plan = $gym->subscription_plan ?? 'Starter';
         $price = self::$plans[$plan];
+
+        if ($this->stripeService->isEnabled()) {
+            $adminUser = User::where('gym_id', $gym->id)->where('role', 'admin')->first();
+            try {
+                $successUrl = route('saas.success', $gym->id);
+                $cancelUrl = route('saas.checkout', $gym->id);
+                $session = $this->stripeService->createSubscriptionSession($gym, $adminUser, $successUrl, $cancelUrl);
+
+                $gym->update([
+                    'stripe_session_id' => $session->id,
+                    'subscription_status' => 'pending',
+                ]);
+
+                return redirect()->away($session->url);
+            } catch (\Exception $e) {
+                Log::error("SaaS Stripe Checkout redirection failed: " . $e->getMessage());
+                return back()->with('error', 'Could not initiate secure Stripe checkout. Please try again.');
+            }
+        }
 
         $request->validate([
             'cardholder_name' => 'required|string|max:255',
@@ -195,9 +224,90 @@ class SaasSubscriptionController extends Controller
     /**
      * Show subscription successful confirmation page.
      */
-    public function showSuccess(int $gymId)
+    public function showSuccess(Request $request, int $gymId)
     {
         $gym = Gym::findOrFail($gymId);
+
+        if ($request->has('session_id') && $this->stripeService->isEnabled()) {
+            $sessionId = $request->query('session_id');
+            $session = $this->stripeService->retrieveSession($sessionId);
+
+            if ($session && $session->payment_status === 'paid' && $gym->subscription_status !== 'active') {
+                $plan = $gym->subscription_plan ?? 'Starter';
+                $price = self::$plans[$plan] ?? 29.00;
+                $transactionId = $session->subscription ?? ('SUB-' . strtoupper(Str::random(10)));
+
+                DB::beginTransaction();
+                try {
+                    $gym->update([
+                        'subscription_status' => 'active',
+                        'subscription_expires_at' => Carbon::now()->addMonth(),
+                        'subscription_transaction_id' => $transactionId,
+                        'stripe_session_id' => $session->id,
+                        'payment_method' => 'stripe',
+                        'transaction_reference' => $session->payment_intent ?? $session->id,
+                        'amount_paid' => $session->amount_total ? ($session->amount_total / 100) : $price,
+                        'payment_at' => now(),
+                    ]);
+
+                    // MongoDB logs
+                    MongoDBService::collection('subscription_analytics')->insertOne([
+                        'gym_id' => $gym->id,
+                        'gym_name' => $gym->name,
+                        'plan' => $plan,
+                        'price' => $price,
+                        'status' => 'active',
+                        'transaction_id' => $transactionId,
+                        'created_at' => now()->toDateTimeString(),
+                    ]);
+
+                    MongoDBService::collection('gym_revenue_analytics')->insertOne([
+                        'gym_id' => $gym->id,
+                        'gym_name' => $gym->name,
+                        'amount' => $price,
+                        'transaction_id' => $transactionId,
+                        'type' => 'subscription',
+                        'created_at' => now()->toDateTimeString(),
+                    ]);
+
+                    MongoDBService::collection('platform_growth_metrics')->insertOne([
+                        'gyms_count' => Gym::count(),
+                        'members_count' => User::where('role', 'member')->count(),
+                        'trainers_count' => User::where('role', 'trainer')->count(),
+                        'bookings_count' => \App\Models\Booking::count(),
+                        'created_at' => now()->toDateTimeString(),
+                    ]);
+
+                    DB::commit();
+
+                    // Send emails with non-blocking try/catch
+                    $adminUser = User::where('gym_id', $gym->id)->where('role', 'admin')->first();
+                    try {
+                        if ($adminUser) {
+                            \App\Jobs\SendSubscriptionConfirmationEmail::dispatch($gym, $adminUser);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Failed to dispatch subscription confirmation email: " . $e->getMessage());
+                    }
+
+                    try {
+                        \App\Jobs\SendSuperAdminSubscriptionNotificationEmail::dispatch($gym);
+                    } catch (\Exception $e) {
+                        Log::error("Failed to dispatch super admin subscription notification email: " . $e->getMessage());
+                    }
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error("Stripe SaaS Redirect Activation failed: " . $e->getMessage());
+                }
+            }
+        }
+
+        // Auto-login admin if not authenticated
+        $adminUser = User::where('gym_id', $gym->id)->where('role', 'admin')->first();
+        if ($adminUser && !Auth::check()) {
+            Auth::login($adminUser);
+        }
+
         return view('saas.success', compact('gym'));
     }
 

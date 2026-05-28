@@ -11,6 +11,7 @@ class LiveSeatAvailability extends Component
     public $displayType = 'badge'; // 'badge' or 'button'
     public $price = 0.00;
     public $isCheckout = false;
+    public $stripeEnabled = false;
 
     public function render()
     {

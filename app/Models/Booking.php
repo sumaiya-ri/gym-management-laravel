@@ -14,7 +14,12 @@ class Booking extends Model
         'status',
         'payment_status',
         'payment_amount',
-        'payment_transaction_id'
+        'payment_transaction_id',
+        'stripe_session_id',
+        'payment_method',
+        'transaction_reference',
+        'amount_paid',
+        'payment_at',
     ];
 
     public function user()

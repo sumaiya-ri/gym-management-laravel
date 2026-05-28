@@ -19,6 +19,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Stripe Webhook
+Route::post('/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])->name('stripe.webhook');
+
 // Unified Registration Selection
 Route::get('/register', function () {
     return view('auth.register-select');

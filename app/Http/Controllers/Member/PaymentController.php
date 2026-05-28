@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Timeslot;
 use App\Models\Booking;
+use App\Services\StripeService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +16,13 @@ use App\Jobs\SendAdminBookingNotificationEmail;
 
 class PaymentController extends Controller
 {
+    protected $stripeService;
+
+    public function __construct(StripeService $stripeService)
+    {
+        $this->stripeService = $stripeService;
+    }
+
     /**
      * Show the simulated payment page.
      */
@@ -49,8 +57,9 @@ class PaymentController extends Controller
         }
 
         $price = 25.00; // Standard simulated flat booking rate
+        $stripeEnabled = $this->stripeService->isEnabled();
 
-        return view('member.payment.checkout', compact('timeslot', 'price'));
+        return view('member.payment.checkout', compact('timeslot', 'price', 'stripeEnabled'));
     }
 
     /**
@@ -83,6 +92,47 @@ class PaymentController extends Controller
                 return response()->json(['error' => 'You have already booked this class.'], 422);
             }
             return redirect()->route('member.classes')->with('error', 'You have already booked this class.');
+        }
+
+        $price = 25.00;
+
+        if ($this->stripeService->isEnabled()) {
+            try {
+                $booking = Booking::create([
+                    'gym_id' => auth()->user()->gym_id,
+                    'user_id' => auth()->id(),
+                    'timeslot_id' => $timeslot->id,
+                    'booking_date' => now(),
+                    'status' => 'pending',
+                    'payment_status' => 'pending',
+                    'payment_amount' => $price,
+                ]);
+
+                $successUrl = route('member.payment.success', $booking->id);
+                $cancelUrl = route('member.payment.checkout', $timeslot->id);
+                $session = $this->stripeService->createBookingSession($booking, $successUrl, $cancelUrl);
+
+                $booking->update([
+                    'stripe_session_id' => $session->id,
+                ]);
+
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'checkout_url' => $session->url,
+                    ], 200);
+                }
+
+                return redirect()->away($session->url);
+            } catch (\Exception $e) {
+                Log::error("Booking Stripe checkout initiation failed: " . $e->getMessage());
+                if (isset($booking)) {
+                    $booking->delete();
+                }
+                if ($request->expectsJson()) {
+                    return response()->json(['error' => 'Could not initiate Stripe payment.'], 500);
+                }
+                return back()->with('error', 'Could not initiate secure Stripe checkout. Please try again.');
+            }
         }
 
         // Validate the fake payment card input details
@@ -170,12 +220,57 @@ class PaymentController extends Controller
     /**
      * Show simulated successful payment confirmation.
      */
-    public function showSuccess(int $bookingId)
+    public function showSuccess(Request $request, int $bookingId)
     {
         $booking = Booking::with(['timeslot.service', 'timeslot.trainer', 'gym'])
             ->where('id', $bookingId)
             ->where('user_id', auth()->id())
             ->firstOrFail();
+
+        if ($request->has('session_id') && $this->stripeService->isEnabled()) {
+            $sessionId = $request->query('session_id');
+            $session = $this->stripeService->retrieveSession($sessionId);
+
+            if ($session && $session->payment_status === 'paid' && $booking->status !== 'confirmed') {
+                $timeslot = $booking->timeslot;
+                $transactionId = $session->payment_intent ?? ('TXN-' . strtoupper(Str::random(10)));
+                $amountPaid = $session->amount_total ? ($session->amount_total / 100) : ($booking->payment_amount ?? 25.00);
+
+                DB::beginTransaction();
+                try {
+                    $booking->update([
+                        'status' => 'confirmed',
+                        'payment_status' => 'paid',
+                        'payment_transaction_id' => $transactionId,
+                        'stripe_session_id' => $session->id,
+                        'payment_method' => 'stripe',
+                        'transaction_reference' => $transactionId,
+                        'amount_paid' => $amountPaid,
+                        'payment_at' => now(),
+                    ]);
+
+                    $timeslot->decrement('capacity');
+
+                    DB::commit();
+
+                    // Send emails with non-blocking try/catch
+                    try {
+                        SendBookingConfirmationEmail::dispatch($booking);
+                    } catch (\Exception $e) {
+                        Log::error("Failed to dispatch booking confirmation email: " . $e->getMessage());
+                    }
+
+                    try {
+                        SendAdminBookingNotificationEmail::dispatch($booking);
+                    } catch (\Exception $e) {
+                        Log::error("Failed to dispatch admin booking notification email: " . $e->getMessage());
+                    }
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error("Stripe Booking Redirect Confirmation failed: " . $e->getMessage());
+                }
+            }
+        }
 
         return view('member.payment.success', compact('booking'));
     }

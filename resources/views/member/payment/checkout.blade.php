@@ -61,58 +61,85 @@
 
         <!-- Payment input form -->
         <div class="card p-8 lg:col-span-2 space-y-6">
-            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Simulated Credit Card Payment</h3>
+            @if(isset($stripeEnabled) && $stripeEnabled)
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Secure Online Payment</h3>
 
-            <!-- Simulator Tip Box -->
-            <div class="p-4 bg-purple-50 border border-purple-100 rounded-2xl flex items-start">
-                <div class="bg-purple-500 p-1.5 rounded-lg mr-3 mt-0.5">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <div>
-                    <p class="font-bold text-purple-900 text-xs">Simulated Payment Gateway (IPG)</p>
-                    <p class="text-[11px] text-purple-700 mt-1 leading-relaxed">
-                        To test a **successful** booking: Enter any valid 16-digit card and any CVV (e.g. 123).<br>
-                        To test a **failed/declined** booking: Enter CVV **999**.
-                    </p>
-                </div>
-            </div>
-
-            <form action="{{ route('member.payment.process', $timeslot->id) }}" method="POST">
-                @csrf
-                <div class="space-y-6">
+                <!-- Stripe Sandbox Info Box -->
+                <div class="p-6 bg-purple-50/70 border border-purple-100 rounded-3xl flex items-start space-x-4">
+                    <div class="bg-purple-600 p-2.5 rounded-2xl text-white shadow-md shadow-purple-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
                     <div>
-                        <label for="cardholder_name" class="block text-sm font-bold text-gray-700 uppercase tracking-widest mb-2">Cardholder Name</label>
-                        <input type="text" name="cardholder_name" id="cardholder_name" value="{{ old('cardholder_name', auth()->user()->name) }}" class="w-full border-gray-200 rounded-xl focus:ring-purple-500 focus:border-purple-500 shadow-sm p-4" placeholder="e.g. John Doe" required>
-                        @error('cardholder_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        <p class="font-extrabold text-purple-900 text-sm">Secure Payment with Stripe Sandbox</p>
+                        <p class="text-xs text-purple-700 mt-1 leading-relaxed">
+                            You will be redirected to the secure Stripe Checkout portal to complete your transaction in **Test Mode**. No real money will be charged.
+                        </p>
+                        <p class="text-[11px] text-purple-600 mt-2 font-semibold">
+                            Acceptable test card: <span class="bg-purple-100/80 px-2 py-0.5 rounded font-mono">4242 4242 4242 4242</span>
+                        </p>
                     </div>
+                </div>
 
-                    <div>
-                        <label for="card_number" class="block text-sm font-bold text-gray-700 uppercase tracking-widest mb-2">Card Number</label>
-                        <input type="text" name="card_number" id="card_number" value="{{ old('card_number') }}" class="w-full border-gray-200 rounded-xl focus:ring-purple-500 focus:border-purple-500 shadow-sm p-4" placeholder="4111222233334444" minlength="16" maxlength="16" required>
-                        @error('card_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label for="expiry" class="block text-sm font-bold text-gray-700 uppercase tracking-widest mb-2">Expiry Date (MM/YY)</label>
-                            <input type="text" name="expiry" id="expiry" value="{{ old('expiry') }}" class="w-full border-gray-200 rounded-xl focus:ring-purple-500 focus:border-purple-500 shadow-sm p-4" placeholder="12/28" maxlength="5" required>
-                            @error('expiry') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label for="cvv" class="block text-sm font-bold text-gray-700 uppercase tracking-widest mb-2">CVV</label>
-                            <input type="text" name="cvv" id="cvv" value="{{ old('cvv') }}" class="w-full border-gray-200 rounded-xl focus:ring-purple-500 focus:border-purple-500 shadow-sm p-4" placeholder="123" minlength="3" maxlength="4" required>
-                            @error('cvv') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                        </div>
-                    </div>
-
+                <form action="{{ route('member.payment.process', $timeslot->id) }}" method="POST">
+                    @csrf
                     <div class="pt-4 flex flex-col space-y-4">
-                        <livewire:member.live-seat-availability :timeslotId="$timeslot->id" :displayType="'button'" :price="$price" :isCheckout="true" />
+                        <livewire:member.live-seat-availability :timeslotId="$timeslot->id" :displayType="'button'" :price="$price" :isCheckout="true" :stripeEnabled="$stripeEnabled" />
                         <a href="{{ route('member.classes') }}" class="block text-center text-sm font-bold text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Cancel</a>
                     </div>
+                </form>
+            @else
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Simulated Credit Card Payment</h3>
+
+                <!-- Simulator Tip Box -->
+                <div class="p-4 bg-purple-50 border border-purple-100 rounded-2xl flex items-start">
+                    <div class="bg-purple-505 p-1.5 rounded-lg mr-3 mt-0.5">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="font-bold text-purple-900 text-xs">Simulated Payment Gateway (IPG)</p>
+                        <p class="text-[11px] text-purple-700 mt-1 leading-relaxed">
+                            To test a **successful** booking: Enter any valid 16-digit card and any CVV (e.g. 123).<br>
+                            To test a **failed/declined** booking: Enter CVV **999**.
+                        </p>
+                    </div>
                 </div>
-            </form>
-        </div>
+
+                <form action="{{ route('member.payment.process', $timeslot->id) }}" method="POST">
+                    @csrf
+                    <div class="space-y-6">
+                        <div>
+                            <label for="cardholder_name" class="block text-sm font-bold text-gray-700 uppercase tracking-widest mb-2">Cardholder Name</label>
+                            <input type="text" name="cardholder_name" id="cardholder_name" value="{{ old('cardholder_name', auth()->user()->name) }}" class="w-full border-gray-200 rounded-xl focus:ring-purple-500 focus:border-purple-500 shadow-sm p-4" placeholder="e.g. John Doe" required>
+                            @error('cardholder_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="card_number" class="block text-sm font-bold text-gray-700 uppercase tracking-widest mb-2">Card Number</label>
+                            <input type="text" name="card_number" id="card_number" value="{{ old('card_number') }}" class="w-full border-gray-200 rounded-xl focus:ring-purple-500 focus:border-purple-500 shadow-sm p-4" placeholder="4111222233334444" minlength="16" maxlength="16" required>
+                            @error('card_number') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label for="expiry" class="block text-sm font-bold text-gray-700 uppercase tracking-widest mb-2">Expiry Date (MM/YY)</label>
+                                <input type="text" name="expiry" id="expiry" value="{{ old('expiry') }}" class="w-full border-gray-200 rounded-xl focus:ring-purple-500 focus:border-purple-500 shadow-sm p-4" placeholder="12/28" maxlength="5" required>
+                                @error('expiry') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label for="cvv" class="block text-sm font-bold text-gray-700 uppercase tracking-widest mb-2">CVV</label>
+                                <input type="text" name="cvv" id="cvv" value="{{ old('cvv') }}" class="w-full border-gray-200 rounded-xl focus:ring-purple-500 focus:border-purple-500 shadow-sm p-4" placeholder="123" minlength="3" maxlength="4" required>
+                                @error('cvv') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex flex-col space-y-4">
+                            <livewire:member.live-seat-availability :timeslotId="$timeslot->id" :displayType="'button'" :price="$price" :isCheckout="true" :stripeEnabled="$stripeEnabled" />
+                            <a href="{{ route('member.classes') }}" class="block text-center text-sm font-bold text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            @endif
     </div>
 </div>
 @endsection
