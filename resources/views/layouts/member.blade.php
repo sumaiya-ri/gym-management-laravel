@@ -31,6 +31,7 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
+    @livewireStyles
 </head>
 <body class="antialiased">
     <div class="flex h-screen overflow-hidden">
@@ -140,5 +141,6 @@
             </main>
         </div>
     </div>
+    @livewireScripts
 </body>
 </html>

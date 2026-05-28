@@ -27,7 +27,10 @@ class GoogleController extends Controller
             session(['oauth_gym_id' => $request->gym_id]);
         }
 
-        return Socialite::driver('google')->redirect();
+        $response = Socialite::driver('google')->redirect();
+        session()->save();
+
+        return $response;
     }
 
     /**
