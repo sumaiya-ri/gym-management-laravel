@@ -73,6 +73,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'otp_expires_at' => 'datetime',
+            'otp_last_sent_at' => 'datetime',
         ];
     }
 

@@ -47,6 +47,11 @@ Route::get('/auth/google/redirect', [\App\Http\Controllers\Auth\GoogleController
 Route::post('/auth/google/redirect', [\App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])->name('auth.google.redirect.post');
 Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
+// Admin Email OTP 2FA Routes (Session restricted)
+Route::get('/auth/otp/verify', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'showVerify'])->name('auth.otp.verify');
+Route::post('/auth/otp/verify', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'verify'])->name('auth.otp.verify.post');
+Route::post('/auth/otp/resend', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'resend'])->name('auth.otp.resend');
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
