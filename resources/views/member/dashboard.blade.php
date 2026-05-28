@@ -98,7 +98,7 @@
             <div class="flex justify-between items-center mb-5">
                 <h3 class="text-sm font-extrabold text-gray-900 uppercase tracking-widest flex items-center">
                     <span class="w-2 h-2 bg-indigo-600 rounded-full mr-3"></span>
-                    Available Today & Tomorrow
+                    Upcoming Classes
                 </h3>
                 <a href="{{ route('member.classes') }}" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-widest transition-colors bg-indigo-50 px-3 py-1.5 rounded-full">View All Classes</a>
             </div>

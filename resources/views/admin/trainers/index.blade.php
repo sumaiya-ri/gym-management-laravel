@@ -42,7 +42,20 @@
                             Inactive
                         </span>
                     @endif
-                    <span class="ml-auto text-[10px] font-bold text-gray-400 uppercase tracking-widest">Joined {{ $trainer->created_at->format('M Y') }}</span>
+                    <span class="ml-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Joined {{ $trainer->created_at->format('M Y') }}</span>
+                    
+                    <div class="ml-auto flex items-center space-x-2">
+                        <a href="{{ route('admin.trainers.edit', $trainer->id) }}" class="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all" title="Edit Trainer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 00-2 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </a>
+                        <form action="{{ route('admin.trainers.destroy', $trainer->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this trainer? This will also remove their associated user account.');" class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete Trainer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

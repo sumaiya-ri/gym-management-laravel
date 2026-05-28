@@ -80,8 +80,9 @@ class LiveClassSearch extends Component
             ->orderBy('start_time')
             ->paginate(9);
 
-        // Fetch user's booked timeslots
+        // Fetch user's booked timeslots (excluding cancelled)
         $myBookedIds = Booking::where('user_id', auth()->id())
+            ->where('status', '!=', 'cancelled')
             ->pluck('timeslot_id')
             ->toArray();
 

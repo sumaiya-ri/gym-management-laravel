@@ -22,7 +22,7 @@
                 $isPast = \Carbon\Carbon::parse($booking->timeslot->date)->isPast();
                 $isCancelled = $booking->status === 'cancelled';
             @endphp
-            <div class="card p-8 border-transparent hover:border-indigo-100 group transition-all duration-300 flex flex-col md:flex-row gap-8 items-start relative {{ $isCancelled ? 'opacity-60 grayscale' : '' }}">
+            <div class="card p-8 border-transparent hover:border-indigo-100 group transition-all duration-300 flex flex-col md:flex-row gap-8 items-start relative {{ $isCancelled ? 'opacity-80 bg-gray-50/50' : '' }}">
                 <div class="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100 shrink-0">
                     <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                 </div>
@@ -62,6 +62,11 @@
                                 Cancel Booking
                             </button>
                         </form>
+                    @elseif($isCancelled && !$isPast)
+                        <a href="{{ route('member.payment.checkout', $booking->timeslot_id) }}" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-xs flex items-center justify-center transition-all shadow-sm">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                            Book Class Again
+                        </a>
                     @endif
                 </div>
             </div>

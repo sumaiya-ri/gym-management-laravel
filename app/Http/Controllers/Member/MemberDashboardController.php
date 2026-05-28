@@ -19,9 +19,10 @@ class MemberDashboardController extends Controller
         $gymId = auth()->user()->gym_id;
         $gym   = Gym::find($gymId);
 
-        // Upcoming bookings for this member
+        // Upcoming bookings for this member (excluding cancelled)
         $myUpcoming = Booking::with(['timeslot.service', 'timeslot.trainer'])
             ->where('user_id', auth()->id())
+            ->where('status', '!=', 'cancelled')
             ->whereHas('timeslot', function ($q) {
                 $q->where('date', '>=', Carbon::today());
             })
@@ -29,19 +30,23 @@ class MemberDashboardController extends Controller
             ->take(3)
             ->get();
 
-        // Available classes today/upcoming
+        // Available classes today/upcoming (excluding classes the user has already booked)
         $availableClasses = Timeslot::with(['service', 'trainer'])
             ->where('gym_id', $gymId)
             ->where('date', '>=', Carbon::today())
             ->where('status', 'active')
             ->where('capacity', '>', 0)
+            ->whereDoesntHave('bookings', function ($q) {
+                $q->where('user_id', auth()->id())
+                  ->where('status', '!=', 'cancelled');
+            })
             ->orderBy('date')
             ->orderBy('start_time')
             ->take(5)
             ->get();
 
         $stats = [
-            'total_bookings'   => Booking::where('user_id', auth()->id())->count(),
+            'total_bookings'   => Booking::where('user_id', auth()->id())->where('status', '!=', 'cancelled')->count(),
             'upcoming_classes' => $myUpcoming->count(),
             'gym_name'         => $gym->name ?? 'My Gym',
         ];
@@ -65,8 +70,9 @@ class MemberDashboardController extends Controller
             ->orderBy('start_time')
             ->paginate(9);
 
-        // Get IDs of classes already booked by the user to show status
+        // Get IDs of classes already booked by the user to show status (excluding cancelled)
         $myBookedIds = Booking::where('user_id', auth()->id())
+            ->where('status', '!=', 'cancelled')
             ->pluck('timeslot_id')
             ->toArray();
 
