@@ -99,6 +99,7 @@ class StripePaymentTest extends TestCase
 
     public function test_fallback_simulation_is_used_when_stripe_disabled(): void
     {
+        config(['services.stripe.secret' => null]);
         // StripeService::isEnabled should return false because keys are empty in test environment by default
         $response = $this->actingAs($this->member)->get(route('member.payment.checkout', $this->timeslot->id));
         $response->assertStatus(200);
@@ -114,14 +115,15 @@ class StripePaymentTest extends TestCase
         $response = $this->actingAs($this->member)->get(route('member.payment.checkout', $this->timeslot->id));
         $response->assertStatus(200);
         $response->assertSee('Secure Online Payment');
-        $response->assertSee('Proceed to Stripe Payment');
+        $response->assertSee('Confirm and Pay');
     }
 
     public function test_stripe_booking_checkout_redirects_to_stripe_url(): void
     {
-        $mockSession = Mockery::mock(\Stripe\Checkout\Session::class);
-        $mockSession->id = 'sess_test_123';
-        $mockSession->url = 'https://checkout.stripe.com/pay/sess_test_123';
+        $mockSession = \Stripe\Checkout\Session::constructFrom([
+            'id' => 'sess_test_123',
+            'url' => 'https://checkout.stripe.com/pay/sess_test_123'
+        ]);
 
         $mockStripe = Mockery::mock(StripeService::class);
         $mockStripe->shouldReceive('isEnabled')->andReturn(true);

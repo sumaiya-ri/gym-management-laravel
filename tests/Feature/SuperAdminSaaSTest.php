@@ -26,6 +26,8 @@ class SuperAdminSaaSTest extends TestCase
     {
         parent::setUp();
 
+        config(['services.stripe.secret' => null]);
+
         // Create gym
         $this->gym = Gym::create([
             'name' => 'GlowGym Central',

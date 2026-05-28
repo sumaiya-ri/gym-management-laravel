@@ -76,7 +76,7 @@
                         <div class="pt-4 flex flex-col space-y-4">
                             <button type="submit" class="w-full bg-glow text-white font-black py-4 rounded-xl hover:opacity-90 transition-all shadow-lg shadow-pink-100 flex items-center justify-center text-xs uppercase tracking-[0.2em]">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                Proceed to Stripe Payment
+                                Confirm and Pay
                             </button>
                             <a href="{{ route('saas.pricing') }}" class="block text-center text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors">Cancel</a>
                         </div>

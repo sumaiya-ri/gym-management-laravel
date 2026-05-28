@@ -32,6 +32,8 @@ class BookingPaymentQueueTest extends TestCase
     {
         parent::setUp();
 
+        config(['services.stripe.secret' => null]);
+
         $this->gym = Gym::create([
             'name' => 'Sana Pilates',
             'email' => 'sana@gmail.com',
