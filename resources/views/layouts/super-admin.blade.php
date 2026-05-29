@@ -18,10 +18,10 @@
 
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
-        .sidebar { background: #0f172a; color: #94a3b8; }
+        .sidebar { background: #27272a; color: #a1a1aa; }
         .nav-link { transition: all 0.2s ease; border-radius: 0.75rem; font-weight: 500; }
-        .nav-link:hover { background-color: #1e293b; color: #f8fafc; }
-        .nav-link.active { background-color: #38bdf8; color: #0f172a; }
+        .nav-link:hover { background-color: #3f3f46; color: #fafafa; }
+        .nav-link.active { background-color: #38bdf8; color: #111827; }
         .card { background: #ffffff; border-radius: 1.25rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.02); transition: all 0.3s ease; }
         .card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04); }
         .btn-cyan { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 0.6rem 1.25rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; display: inline-block; }
@@ -51,11 +51,11 @@
 
                 <!-- Nav List -->
                 <nav class="px-6 space-y-1.5 mt-4">
-                    <a href="{{ route('super-admin.dashboard') }}" class="nav-link flex items-center px-4 py-3 text-slate-400 {{ request()->routeIs('super-admin.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('super-admin.dashboard') }}" class="nav-link flex items-center px-4 py-3 text-zinc-400 {{ request()->routeIs('super-admin.dashboard') ? 'active' : '' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                         Overview Dashboard
                     </a>
-                    <a href="{{ route('profile.api-tokens') }}" class="nav-link flex items-center px-4 py-3 text-slate-400 {{ request()->routeIs('profile.api-tokens') ? 'active' : '' }}">
+                    <a href="{{ route('profile.api-tokens') }}" class="nav-link flex items-center px-4 py-3 text-zinc-400 {{ request()->routeIs('profile.api-tokens') ? 'active' : '' }}">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2v2a2 2 0 01-2 2H9a2 2 0 01-2-2V9a2 2 0 012-2h6zM15 7V5a3 3 0 10-6 0v2m6 0h-6"/></svg>
                         Developer Integrations
                     </a>
@@ -63,10 +63,10 @@
             </div>
 
             <!-- Sign Out -->
-            <div class="p-8 border-t border-slate-800">
+            <div class="p-8 border-t border-zinc-700">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="flex items-center w-full px-4 py-3 text-sm font-semibold text-rose-400 hover:bg-slate-800 rounded-xl transition-all">
+                    <button type="submit" class="flex items-center w-full px-4 py-3 text-sm font-semibold text-rose-400 hover:bg-zinc-700 rounded-xl transition-all">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                         Sign Out
                     </button>

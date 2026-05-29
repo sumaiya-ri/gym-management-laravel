@@ -125,7 +125,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                 <div class="relative">
                     <div class="absolute -inset-4 bg-pink-100/50 rounded-[2.5rem] -rotate-2"></div>
-                    <img src="{{ asset('public/images/gymgirls.png') }}"
+                    <img src="{{ asset('images/gymgirls.png') }}"
                         class="relative rounded-[2rem] shadow-2xl w-full h-[500px] object-cover" alt="Women training">
                     <div
                         class="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white">

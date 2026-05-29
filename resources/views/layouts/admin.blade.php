@@ -184,5 +184,85 @@
             </main>
         </div>
     </div>
+
+    <!-- Beautiful Global Confirm Delete Modal -->
+    <div id="confirm-delete-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-gray-950/40 backdrop-blur-sm transition-opacity duration-300"></div>
+        
+        <!-- Modal Content Card -->
+        <div class="relative bg-white rounded-3xl max-w-sm w-full p-8 shadow-2xl border border-gray-100 transform transition-all scale-95 opacity-0 duration-300 ease-out z-10" id="confirm-modal-card">
+            <!-- Close Button -->
+            <button onclick="closeDeleteModal()" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors p-1.5 hover:bg-gray-50 rounded-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 border border-red-100 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-gray-900 tracking-tight">Confirm Delete</h3>
+                    <p class="text-[9px] text-red-600 font-extrabold uppercase tracking-widest mt-0.5">Danger Zone</p>
+                </div>
+            </div>
+            
+            <p class="text-gray-500 text-xs mb-8 leading-relaxed font-medium" id="confirm-modal-message">
+                Are you sure you want to delete this item? This action is permanent and cannot be undone.
+            </p>
+            
+            <div class="flex space-x-3">
+                <button onclick="closeDeleteModal()" type="button" class="flex-1 py-3 px-4 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all border border-gray-100">
+                    Cancel
+                </button>
+                <button id="confirm-delete-btn" type="button" class="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-red-200 transition-all">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let formToSubmit = null;
+
+        function showDeleteModal(event, message = '') {
+            event.preventDefault();
+            formToSubmit = event.target.closest('form');
+            
+            if (message) {
+                document.getElementById('confirm-modal-message').innerText = message;
+            } else {
+                document.getElementById('confirm-modal-message').innerText = "Are you sure you want to delete this item? This action is permanent and cannot be undone.";
+            }
+
+            const modal = document.getElementById('confirm-delete-modal');
+            const card = document.getElementById('confirm-modal-card');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('confirm-delete-modal');
+            const card = document.getElementById('confirm-modal-card');
+            
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                formToSubmit = null;
+            }, 300);
+        }
+
+        document.getElementById('confirm-delete-btn').addEventListener('click', function() {
+            if (formToSubmit) {
+                formToSubmit.submit();
+            }
+        });
+    </script>
 </body>
 </html>

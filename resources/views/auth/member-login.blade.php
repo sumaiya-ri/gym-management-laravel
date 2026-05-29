@@ -31,7 +31,15 @@
                 <!-- Password -->
                 <div class="mt-4">
                     <x-label for="password" value="{{ __('Password') }}" class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1" />
-                    <x-input id="password" class="block w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 rounded-xl px-4 py-3 bg-white text-gray-700" type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+                    <div class="relative">
+                        <x-input id="password" class="block w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 rounded-xl pl-4 pr-10 py-3 bg-white text-gray-700" type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+                        <button type="button" onclick="togglePasswordVisibility('password', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Remember Me & Forgot Password -->
