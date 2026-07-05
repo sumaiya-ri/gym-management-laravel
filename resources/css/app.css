@@ -5,3 +5,21 @@
 [x-cloak] {
     display: none;
 }
+
+html {
+    zoom: 85%;
+    height: 100%;
+}
+
+body {
+    height: 100%;
+}
+
+/* Adjust Tailwind viewport height helpers to compensate for the 85% zoom */
+.h-screen {
+    height: 117.65vh !important;
+}
+
+.min-h-screen {
+    min-height: 117.65vh !important;
+}

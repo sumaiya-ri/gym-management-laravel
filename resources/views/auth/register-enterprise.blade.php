@@ -1,4 +1,14 @@
 <x-guest-layout>
+    <!-- Back Button -->
+    <div class="fixed top-8 left-8 z-50">
+        <a href="{{ route('saas.pricing') }}" class="flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-pink-600 transition-colors bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-gray-100 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span>Back</span>
+        </a>
+    </div>
+
     <div class="min-h-screen bg-gradient-to-br from-pink-50 to-indigo-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
             <div class="inline-flex items-center space-x-2 mb-6">

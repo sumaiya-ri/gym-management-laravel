@@ -1,4 +1,14 @@
 <x-guest-layout>
+    <!-- Back Button -->
+    <div class="fixed top-8 left-8 z-50">
+        <a href="{{ route('register') }}" class="flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-purple-600 transition-colors bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-gray-100 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span>Back</span>
+        </a>
+    </div>
+
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-purple-50 to-indigo-50">
         <div class="w-full sm:max-w-md mt-6 px-8 py-10 bg-white shadow-2xl overflow-hidden sm:rounded-3xl border border-purple-100">
             <div class="text-center mb-8">

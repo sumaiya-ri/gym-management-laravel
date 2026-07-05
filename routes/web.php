@@ -15,6 +15,7 @@ use App\Http\Controllers\MemberAuthController;
 use App\Http\Controllers\SaasSubscriptionController;
 use App\Http\Controllers\SuperAdmin\SuperAdminDashboardController;
 
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -52,6 +53,7 @@ Route::get('/auth/otp/verify', [\App\Http\Controllers\Auth\OtpVerificationContro
 Route::post('/auth/otp/verify', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'verify'])->name('auth.otp.verify.post');
 Route::post('/auth/otp/resend', [\App\Http\Controllers\Auth\OtpVerificationController::class, 'resend'])->name('auth.otp.resend');
 
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -87,6 +89,7 @@ Route::middleware([
     // Super Admin Routes
     Route::middleware(['super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/analytics', [SuperAdminDashboardController::class, 'analyticsData'])->name('analytics');
     });
 
     // Admin Routes
@@ -123,4 +126,7 @@ Route::middleware([
         Route::get('/payment/success/{booking}', [PaymentController::class, 'showSuccess'])->name('payment.success');
         Route::get('/payment/failed/{timeslot}', [PaymentController::class, 'showFailed'])->name('payment.failed');
     });
+
+
 });
+

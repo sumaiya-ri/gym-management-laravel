@@ -3,15 +3,186 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MongoDBService
 {
     /**
-     * Get a mock collection instance.
+     * Cache the availability status of MongoDB.
      */
-    public static function collection(string $name): MongoCollectionMock
+    protected static $mongoAvailable = null;
+
+    /**
+     * Check if a valid MongoDB connection exists and is reachable.
+     */
+    public static function isMongoAvailable(): bool
     {
-        return new MongoCollectionMock($name);
+        if (self::$mongoAvailable !== null) {
+            return self::$mongoAvailable;
+        }
+
+        try {
+            $connection = DB::connection('mongodb');
+            // Execute a simple ping command to verify connection and auth status
+            $connection->getMongoDB()->command(['ping' => 1]);
+            self::$mongoAvailable = true;
+        } catch (\Exception $e) {
+            Log::warning("MongoDB Atlas connection failed. Falling back to MySQL mock. Error: " . $e->getMessage());
+            self::$mongoAvailable = false;
+        }
+
+        return self::$mongoAvailable;
+    }
+
+    /**
+     * Get a collection instance.
+     */
+    public static function collection(string $name): MongoDBCollection
+    {
+        return new MongoDBCollection($name);
+    }
+}
+
+class MongoDBCollection
+{
+    protected $collectionName;
+    protected $delegate;
+
+    public function __construct(string $collectionName)
+    {
+        $this->collectionName = $collectionName;
+        if (MongoDBService::isMongoAvailable()) {
+            $this->delegate = new RealMongoCollection($collectionName);
+        } else {
+            $this->delegate = new MongoCollectionMock($collectionName);
+        }
+    }
+
+    public function insertOne(array $document): bool
+    {
+        return $this->delegate->insertOne($document);
+    }
+
+    public function insertMany(array $documents): bool
+    {
+        return $this->delegate->insertMany($documents);
+    }
+
+    public function find(array $filter = []): array
+    {
+        return $this->delegate->find($filter);
+    }
+
+    public function aggregate(array $pipeline): array
+    {
+        return $this->delegate->aggregate($pipeline);
+    }
+
+    public function deleteMany(array $filter = []): bool
+    {
+        return $this->delegate->deleteMany($filter);
+    }
+}
+
+class RealMongoCollection
+{
+    protected $collectionName;
+    protected $collection;
+
+    public function __construct(string $collectionName)
+    {
+        $this->collectionName = $collectionName;
+        $this->collection = DB::connection('mongodb')->getCollection($collectionName);
+    }
+
+    public function insertOne(array $document): bool
+    {
+        if (!isset($document['created_at'])) {
+            $document['created_at'] = new \MongoDB\BSON\UTCDateTime(now());
+        } elseif (is_string($document['created_at'])) {
+            $document['created_at'] = new \MongoDB\BSON\UTCDateTime(strtotime($document['created_at']) * 1000);
+        }
+
+        $this->collection->insertOne($document);
+        return true;
+    }
+
+    public function insertMany(array $documents): bool
+    {
+        foreach ($documents as &$doc) {
+            if (!isset($doc['created_at'])) {
+                $doc['created_at'] = new \MongoDB\BSON\UTCDateTime(now());
+            } elseif (is_string($doc['created_at'])) {
+                $doc['created_at'] = new \MongoDB\BSON\UTCDateTime(strtotime($doc['created_at']) * 1000);
+            }
+        }
+        $this->collection->insertMany($documents);
+        return true;
+    }
+
+    public function find(array $filter = []): array
+    {
+        $cursor = $this->collection->find($filter);
+        $results = [];
+        foreach ($cursor as $doc) {
+            $array = json_decode(json_encode($doc), true);
+            
+            if (isset($doc['_id']) && $doc['_id'] instanceof \MongoDB\BSON\ObjectId) {
+                $array['_id'] = (string)$doc['_id'];
+            }
+            
+            if (isset($doc['created_at']) && $doc['created_at'] instanceof \MongoDB\BSON\UTCDateTime) {
+                $array['created_at'] = $doc['created_at']->toDateTime()->setTimezone(new \DateTimeZone(config('app.timezone', 'UTC')))->format('Y-m-d H:i:s');
+            }
+            
+            $results[] = $array;
+        }
+        return $results;
+    }
+
+    public function aggregate(array $pipeline): array
+    {
+        $pipeline = $this->transformPipeline($pipeline);
+        $cursor = $this->collection->aggregate($pipeline);
+        $results = [];
+        foreach ($cursor as $doc) {
+            $array = json_decode(json_encode($doc), true);
+
+            if (isset($doc['_id']) && $doc['_id'] instanceof \MongoDB\BSON\ObjectId) {
+                $array['_id'] = (string)$doc['_id'];
+            }
+
+            if (isset($doc['created_at']) && $doc['created_at'] instanceof \MongoDB\BSON\UTCDateTime) {
+                $array['created_at'] = $doc['created_at']->toDateTime()->setTimezone(new \DateTimeZone(config('app.timezone', 'UTC')))->format('Y-m-d H:i:s');
+            }
+
+            $results[] = $array;
+        }
+        return $results;
+    }
+
+    public function deleteMany(array $filter = []): bool
+    {
+        $this->collection->deleteMany($filter);
+        return true;
+    }
+
+    protected function transformPipeline(array $pipeline): array
+    {
+        return array_map(function ($stage) {
+            if (isset($stage['$group']['_id']) && is_array($stage['$group']['_id'])) {
+                $idExpr = $stage['$group']['_id'];
+                if (isset($idExpr['$month']) && $idExpr['$month'] === '$created_at') {
+                    $stage['$group']['_id'] = [
+                        '$dateToString' => [
+                            'format' => '%Y-%m',
+                            'date' => '$created_at'
+                        ]
+                    ];
+                }
+            }
+            return $stage;
+        }, $pipeline);
     }
 }
 
@@ -24,12 +195,8 @@ class MongoCollectionMock
         $this->collectionName = $collectionName;
     }
 
-    /**
-     * Insert a single document into the mock collection.
-     */
     public function insertOne(array $document): bool
     {
-        // Add timestamps automatically if not set
         if (!isset($document['created_at'])) {
             $document['created_at'] = now()->toDateTimeString();
         }
@@ -44,9 +211,6 @@ class MongoCollectionMock
         return true;
     }
 
-    /**
-     * Insert multiple documents.
-     */
     public function insertMany(array $documents): bool
     {
         foreach ($documents as $doc) {
@@ -55,9 +219,6 @@ class MongoCollectionMock
         return true;
     }
 
-    /**
-     * Retrieve documents matching a filter.
-     */
     public function find(array $filter = []): array
     {
         $rows = DB::table('mongodb_collections')
@@ -75,12 +236,8 @@ class MongoCollectionMock
         return $results;
     }
 
-    /**
-     * Aggregate pipeline helper.
-     */
     public function aggregate(array $pipeline): array
     {
-        // Get all documents in the collection
         $rows = DB::table('mongodb_collections')
             ->where('collection', $this->collectionName)
             ->get();
@@ -90,7 +247,6 @@ class MongoCollectionMock
             $data[] = json_decode($row->document, true);
         }
 
-        // Process stages sequentially
         foreach ($pipeline as $stage) {
             foreach ($stage as $stageName => $stageParams) {
                 switch ($stageName) {
@@ -113,9 +269,27 @@ class MongoCollectionMock
         return $data;
     }
 
-    /**
-     * Match stage processing.
-     */
+    public function deleteMany(array $filter = []): bool
+    {
+        if (empty($filter)) {
+            DB::table('mongodb_collections')->where('collection', $this->collectionName)->delete();
+            return true;
+        }
+
+        $rows = DB::table('mongodb_collections')
+            ->where('collection', $this->collectionName)
+            ->get();
+
+        foreach ($rows as $row) {
+            $doc = json_decode($row->document, true);
+            if ($this->matchesFilter($doc, $filter)) {
+                DB::table('mongodb_collections')->where('id', $row->id)->delete();
+            }
+        }
+
+        return true;
+    }
+
     protected function processMatch(array $data, array $filter): array
     {
         $filtered = [];
@@ -127,23 +301,17 @@ class MongoCollectionMock
         return $filtered;
     }
 
-    /**
-     * Group stage processing.
-     */
     protected function processGroup(array $data, array $groupParams): array
     {
         $idExpr = $groupParams['_id'] ?? null;
         $groups = [];
 
         foreach ($data as $doc) {
-            // Resolve group key value (e.g. '$gym_name' => value of $doc['gym_name'])
             $groupKey = 'null';
             if (is_string($idExpr) && str_starts_with($idExpr, '$')) {
                 $field = substr($idExpr, 1);
                 $groupKey = $doc[$field] ?? 'null';
             } elseif (is_array($idExpr)) {
-                // Support complex expressions (like date formats)
-                // For simplicity of monthly revenue, check if expression resolves month
                 if (isset($idExpr['$month'])) {
                     $dateField = substr($idExpr['$month'], 1);
                     $dateVal = $doc[$dateField] ?? null;
@@ -203,9 +371,6 @@ class MongoCollectionMock
         return $results;
     }
 
-    /**
-     * Sort stage processing.
-     */
     protected function processSort(array $data, array $sortParams): array
     {
         usort($data, function ($a, $b) use ($sortParams) {
@@ -229,14 +394,10 @@ class MongoCollectionMock
         return $data;
     }
 
-    /**
-     * Helper to verify if document matches standard filter.
-     */
     protected function matchesFilter(array $doc, array $filter): bool
     {
         foreach ($filter as $key => $val) {
             if (is_array($val)) {
-                // Support operator queries (like $gte, $lte)
                 foreach ($val as $op => $opVal) {
                     $docVal = $doc[$key] ?? null;
                     switch ($op) {

@@ -18,7 +18,8 @@ class TimeslotController extends Controller
                 $q->where('status', 'confirmed');
             }])
             ->where('gym_id', auth()->user()->gym_id)
-            ->get();
+            ->orderBy('date', 'desc')
+            ->paginate(10);
         return view('admin.timeslots.index', compact('timeslots'));
     }
 

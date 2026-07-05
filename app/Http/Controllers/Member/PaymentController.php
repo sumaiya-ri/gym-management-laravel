@@ -184,6 +184,20 @@ class PaymentController extends Controller
             Log::info("Payment successful. Transaction ID: {$transactionId}. Amount: ${price} for User: " . auth()->user()->email);
             Log::info("Booking ID: {$booking->id} created successfully for Timeslot ID: {$timeslotId}");
 
+            try {
+                \App\Services\MongoDBService::collection('booking_metrics')->insertOne([
+                    'booking_id' => $booking->id,
+                    'gym_id' => $booking->gym_id,
+                    'gym_name' => auth()->user()->gym->name ?? 'Unknown Gym',
+                    'class_name' => $timeslot->service->name ?? 'Unknown Class',
+                    'user_id' => $booking->user_id,
+                    'amount' => $booking->payment_amount,
+                    'created_at' => now()->toDateTimeString(),
+                ]);
+            } catch (\Exception $e) {
+                Log::warning("Could not log booking metrics to MongoDB: " . $e->getMessage());
+            }
+
             // Dispatch Email Queue Jobs asynchronously with try/catch to avoid blocking the redirect
             try {
                 SendBookingConfirmationEmail::dispatch($booking);
@@ -252,6 +266,20 @@ class PaymentController extends Controller
                     $timeslot->decrement('capacity');
 
                     DB::commit();
+
+                    try {
+                        \App\Services\MongoDBService::collection('booking_metrics')->insertOne([
+                            'booking_id' => $booking->id,
+                            'gym_id' => $booking->gym_id,
+                            'gym_name' => $booking->gym->name ?? 'Unknown Gym',
+                            'class_name' => $timeslot->service->name ?? 'Unknown Class',
+                            'user_id' => $booking->user_id,
+                            'amount' => $amountPaid,
+                            'created_at' => now()->toDateTimeString(),
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::warning("Could not log booking metrics to MongoDB in Stripe success: " . $e->getMessage());
+                    }
 
                     // Send emails with non-blocking try/catch
                     try {

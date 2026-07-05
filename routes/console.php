@@ -41,7 +41,7 @@ Artisan::command('saas:seed-demo', function () {
         );
 
         // Seed successful transaction to MongoDB collections
-        \App\Services\MongoDBService::collection('subscription_analytics')->insertOne([
+        \App\Services\MongoDBService::collection('gym_analytics')->insertOne([
             'gym_id' => $gym->id,
             'gym_name' => $gym->name,
             'plan' => $data['plan'],
@@ -51,7 +51,7 @@ Artisan::command('saas:seed-demo', function () {
             'created_at' => now()->toDateTimeString(),
         ]);
 
-        \App\Services\MongoDBService::collection('gym_revenue_analytics')->insertOne([
+        \App\Services\MongoDBService::collection('payment_logs')->insertOne([
             'gym_id' => $gym->id,
             'gym_name' => $gym->name,
             'amount' => $plans[$data['plan']],
@@ -62,7 +62,7 @@ Artisan::command('saas:seed-demo', function () {
     }
 
     // Update global growth metrics in MongoDB
-    \App\Services\MongoDBService::collection('platform_growth_metrics')->insertOne([
+    \App\Services\MongoDBService::collection('gym_analytics')->insertOne([
         'gyms_count' => \App\Models\Gym::count(),
         'members_count' => \App\Models\User::where('role', 'member')->count(),
         'trainers_count' => \App\Models\User::where('role', 'trainer')->count(),

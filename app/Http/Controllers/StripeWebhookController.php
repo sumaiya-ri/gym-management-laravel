@@ -140,7 +140,7 @@ class StripeWebhookController extends Controller
             ]);
 
             // MongoDB analytics logging
-            MongoDBService::collection('subscription_analytics')->insertOne([
+            MongoDBService::collection('gym_analytics')->insertOne([
                 'gym_id' => $gym->id,
                 'gym_name' => $gym->name,
                 'plan' => $plan,
@@ -150,7 +150,7 @@ class StripeWebhookController extends Controller
                 'created_at' => now()->toDateTimeString(),
             ]);
 
-            MongoDBService::collection('gym_revenue_analytics')->insertOne([
+            MongoDBService::collection('payment_logs')->insertOne([
                 'gym_id' => $gym->id,
                 'gym_name' => $gym->name,
                 'amount' => $price,
@@ -159,7 +159,7 @@ class StripeWebhookController extends Controller
                 'created_at' => now()->toDateTimeString(),
             ]);
 
-            MongoDBService::collection('platform_growth_metrics')->insertOne([
+            MongoDBService::collection('gym_analytics')->insertOne([
                 'gyms_count' => Gym::count(),
                 'members_count' => User::where('role', 'member')->count(),
                 'trainers_count' => User::where('role', 'trainer')->count(),
@@ -239,6 +239,20 @@ class StripeWebhookController extends Controller
             $timeslot->decrement('capacity');
 
             DB::commit();
+
+            try {
+                MongoDBService::collection('booking_metrics')->insertOne([
+                    'booking_id' => $booking->id,
+                    'gym_id' => $booking->gym_id,
+                    'gym_name' => $booking->gym->name ?? 'Unknown Gym',
+                    'class_name' => $timeslot->service->name ?? 'Unknown Class',
+                    'user_id' => $booking->user_id,
+                    'amount' => $amountPaid,
+                    'created_at' => now()->toDateTimeString(),
+                ]);
+            } catch (\Exception $e) {
+                Log::warning("Could not log booking metrics to MongoDB in Stripe webhook: " . $e->getMessage());
+            }
 
             // Send booking emails with non-blocking try/catch
             try {

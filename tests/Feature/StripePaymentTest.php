@@ -32,6 +32,11 @@ class StripePaymentTest extends TestCase
     {
         parent::setUp();
 
+        // Truncate MongoDB collections for test isolation
+        foreach (['gym_analytics', 'payment_logs', 'booking_metrics', 'login_activity'] as $col) {
+            MongoDBService::collection($col)->deleteMany([]);
+        }
+
         $this->gym = Gym::create([
             'name' => 'Sana Pilates',
             'email' => 'sana@gmail.com',
@@ -174,7 +179,7 @@ class StripePaymentTest extends TestCase
         $this->assertEquals('stripe', $this->gym->payment_method);
         $this->assertEquals(59.00, $this->gym->amount_paid);
 
-        $analytics = MongoDBService::collection('subscription_analytics')->find([
+        $analytics = MongoDBService::collection('gym_analytics')->find([
             'gym_id' => $this->gym->id
         ]);
         $this->assertCount(1, $analytics);

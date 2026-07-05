@@ -11,6 +11,7 @@ class GymController extends Controller
     /**
      * Display the gym details.
      */
+    //crud for gym admin
     public function show()
     {
         $gym = auth()->user()->gym;

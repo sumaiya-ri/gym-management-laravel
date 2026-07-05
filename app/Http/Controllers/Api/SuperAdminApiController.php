@@ -14,6 +14,9 @@ class SuperAdminApiController extends Controller
     /**
      * Get a list of all gyms.
      */
+
+//how me a MongoDB aggregation pipeline," open SuperAdminApiController.php and point to any one
+//  of these — the analytics() method has five separate pipelines using $group, $sum, $sort, and $limit.
     public function gyms()
     {
         return response()->json(Gym::all(), 200);
@@ -25,7 +28,7 @@ class SuperAdminApiController extends Controller
     public function subscriptions()
     {
         $activeGyms = Gym::where('subscription_status', 'active')->get();
-        $transactions = MongoDBService::collection('subscription_analytics')->find(['status' => 'active']);
+        $transactions = MongoDBService::collection('gym_analytics')->find(['status' => 'active']);
 
         return response()->json([
             'active_gyms' => $activeGyms,
@@ -43,7 +46,7 @@ class SuperAdminApiController extends Controller
         $totalTrainers = User::where('role', 'trainer')->count();
         $totalBookings = Booking::count();
 
-        $revenueAggregate = MongoDBService::collection('gym_revenue_analytics')->aggregate([
+        $revenueAggregate = MongoDBService::collection('payment_logs')->aggregate([
             [
                 '$group' => [
                     '_id' => 'total_revenue',
@@ -61,7 +64,7 @@ class SuperAdminApiController extends Controller
         $expiredSubs = Gym::where('subscription_status', 'expired')->count();
 
         // 1. Top gyms (by booking count)
-        $topGyms = MongoDBService::collection('booking_statistics')->aggregate([
+        $topGyms = MongoDBService::collection('booking_metrics')->aggregate([
             [
                 '$group' => [
                     '_id' => '$gym_name',
@@ -78,7 +81,7 @@ class SuperAdminApiController extends Controller
         $topGym = $topGyms[0]['_id'] ?? 'N/A';
 
         // 2. Monthly SaaS revenue
-        $monthlyRevenue = MongoDBService::collection('gym_revenue_analytics')->aggregate([
+        $monthlyRevenue = MongoDBService::collection('payment_logs')->aggregate([
             [
                 '$group' => [
                     '_id' => [
@@ -93,7 +96,7 @@ class SuperAdminApiController extends Controller
         ]);
 
         // 3. Most popular classes
-        $popularClasses = MongoDBService::collection('booking_statistics')->aggregate([
+        $popularClasses = MongoDBService::collection('booking_metrics')->aggregate([
             [
                 '$group' => [
                     '_id' => '$class_name',
@@ -109,7 +112,7 @@ class SuperAdminApiController extends Controller
         ]);
 
         // 4. Subscription distribution
-        $subscriptionDistribution = MongoDBService::collection('subscription_analytics')->aggregate([
+        $subscriptionDistribution = MongoDBService::collection('gym_analytics')->aggregate([
             [
                 '$group' => [
                     '_id' => '$plan',

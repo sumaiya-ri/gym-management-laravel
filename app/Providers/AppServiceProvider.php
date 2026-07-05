@@ -22,7 +22,25 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         if (app()->environment('production')) {
-    URL::forceScheme('https');
-}
+            URL::forceScheme('https');
+        }
+
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Login::class,
+            function (\Illuminate\Auth\Events\Login $event) {
+                try {
+                    \App\Services\MongoDBService::collection('login_activity')->insertOne([
+                        'user_id' => $event->user->id,
+                        'email' => $event->user->email,
+                        'role' => $event->user->role,
+                        'ip_address' => request()->ip(),
+                        'user_agent' => request()->userAgent(),
+                        'created_at' => now()->toDateTimeString(),
+                    ]);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning("Could not log login activity to MongoDB: " . $e->getMessage());
+                }
+            }
+        );
     }
 }

@@ -16,6 +16,16 @@
     </style>
 </head>
 <body class="antialiased">
+    <!-- Back Button -->
+    <div class="fixed top-8 left-8 z-50">
+        <a href="/" class="flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-pink-600 transition-colors bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-gray-100 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span>Back</span>
+        </a>
+    </div>
+
     <div class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-6xl w-full space-y-12">
             
@@ -31,7 +41,7 @@
                 <!-- Member Card -->
                 <div class="bg-white rounded-[3rem] overflow-hidden pink-glow border border-pink-50 flex flex-col h-full group hover:shadow-pink-200/50 transition-all duration-500">
                     <div class="h-64 relative overflow-hidden shrink-0">
-                        <img src="{{ asset('images/auth/member-bg.png') }}" alt="Member" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000">
+                        <img src="{{ asset('images/Girls_member.png') }}" alt="Member" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" style="object-position: center top;">
                         <div class="absolute top-6 left-6">
                             <span class="px-5 py-2 bg-pink-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">For Members</span>
                         </div>

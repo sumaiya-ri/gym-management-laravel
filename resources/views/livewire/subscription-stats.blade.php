@@ -22,7 +22,7 @@
                 <span class="text-slate-800"><span x-text="starterCount">{{ $starterCount }}</span> (<span x-text="starterPct">{{ $starterPct }}</span>%)</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-2">
-                <div class="bg-gradient-to-r from-sky-400 to-sky-500 h-2 rounded-full" :style="'width: ' + starterPct + '%'" style="width: {{ $starterPct }}%"></div>
+                <div class="bg-gradient-to-r from-sky-400 to-sky-50 h-2 rounded-full" :style="'width: ' + starterPct + '%'" style="width: {{ $starterPct }}%"></div>
             </div>
         </div>
 

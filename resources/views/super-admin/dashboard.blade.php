@@ -41,7 +41,7 @@
         this.isLoading = true;
         this.showError = false;
 
-        axios.get('/api/admin/analytics')
+        axios.get('/super-admin/analytics')
             .then(response => {
                 const data = response.data;
                 this.totalGyms = data.total_gyms;

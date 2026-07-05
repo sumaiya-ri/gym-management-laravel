@@ -84,5 +84,11 @@
             @endforelse
         </tbody>
     </table>
+
+    @if($services->hasPages())
+        <div class="px-10 py-5 border-t border-gray-100 bg-gray-50/20">
+            {{ $services->links() }}
+        </div>
+    @endif
 </div>
 @endsection

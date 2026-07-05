@@ -19,7 +19,7 @@ class LiveRevenueCounter extends Component
      */
     public function refreshRevenue()
     {
-        $revenueAggregate = MongoDBService::collection('gym_revenue_analytics')->aggregate([
+        $revenueAggregate = MongoDBService::collection('payment_logs')->aggregate([
             [
                 '$group' => [
                     '_id' => 'total_revenue',

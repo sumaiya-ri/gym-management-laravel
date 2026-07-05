@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\GymApiController;
 // Public API Login (Token creation)
 Route::post('/login', [ApiTokenController::class, 'login']);
 
+//requires a valid sanctum token
 Route::middleware('auth:sanctum')->group(function () {
     
     // Authenticated User Info

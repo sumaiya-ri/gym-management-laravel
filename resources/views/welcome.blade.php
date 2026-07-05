@@ -70,6 +70,8 @@
                 </div>
 
                 <div class="flex items-center space-x-8">
+                    <a href="{{ route('saas.pricing') }}"
+                        class="text-sm font-bold text-gray-700 hover:text-pink-500 transition-colors mr-2">Pricing</a>
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ url('/dashboard') }}"
@@ -91,7 +93,7 @@
     <!-- Hero Section -->
     <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <img src="{{ asset('images/gymladies.jpg') }}" class="w-full h-full object-cover opacity-10"
+            <img src="{{ asset('images/gymladies.jpg') }}" class="w-full h-full object-cover opacity-40"
                 alt="Gym Background">
             <div class="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white"></div>
         </div>
@@ -195,7 +197,7 @@
     </section>
 
     <!-- Features Section -->
-    <section class="py-24 bg-pink-50/30">
+    <section class="py-24 bg-pink-50">
         <div class="max-w-7xl mx-auto px-6 lg:px-8 text-center">
             <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">All the tools u need to</p>
             <h2 class="text-5xl lg:text-7xl font-black text-pink-500 mb-20">GROW UR BUSINESS</h2>
@@ -295,7 +297,7 @@
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="group relative overflow-hidden rounded-3xl h-64">
-                    <img src="{{ asset('images/landing/pilates.png') }}"
+                    <img src="{{ asset('images/pilates.png') }}"
                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         alt="Pilates">
                     <div class="absolute inset-0 bg-black/40 flex items-end p-6">
@@ -311,7 +313,7 @@
                     </div>
                 </div>
                 <div class="group relative overflow-hidden rounded-3xl h-64">
-                    <img src="{{ asset('images/landing/hiit.png') }}"
+                    <img src="{{ asset('images/HIITNEW.jpg') }}"
                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         alt="HIIT">
                     <div class="absolute inset-0 bg-black/40 flex items-end p-6">
@@ -330,8 +332,10 @@
         </div>
     </section>
 
+
+
     <!-- Final CTA Section -->
-    <section class="py-24 bg-gradient-to-b from-white to-pink-50/50 overflow-hidden relative">
+    <section class="py-24 bg-pink-50 overflow-hidden relative">
         <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
             <h2 class="text-4xl lg:text-5xl font-black text-gray-900 mb-6 tracking-tight">Interested in joining? Get
                 Started <br>with <span class="text-pink-500">GlowGym</span> today</h2>
@@ -353,10 +357,10 @@
     </section>
 
     <!-- Footer -->
-    <footer class="py-20 bg-white border-t border-gray-50">
+    <footer class="pt-35 pb-24 bg-pink-100 border-t border-pink-200">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-                <div class="col-span-1">
+                <div class="col-span-1 md:col-span-2">
                     <div class="flex items-center space-x-2 mb-6">
                         <div class="bg-glow p-1.5 rounded-lg shadow-md">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -367,45 +371,20 @@
                         <span class="text-xl font-black tracking-tight text-gray-900">Glow<span
                                 class="text-pink-500">Gym</span></span>
                     </div>
-                    <p class="text-sm text-gray-400 font-medium leading-relaxed">The ultimate management platform for
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed max-w-sm">The ultimate management platform for
                         the modern women's fitness studio.</p>
                 </div>
 
                 <div>
-                    <h5 class="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest">Service</h5>
-                    <ul class="space-y-4 text-sm text-gray-500 font-medium">
-                        <li><a href="#" class="hover:text-pink-500 transition-colors">Pricing</a></li>
-                        <li><a href="#" class="hover:text-pink-500 transition-colors">Features</a></li>
-                        <li><a href="#" class="hover:text-pink-500 transition-colors">Case Studies</a></li>
+                    <h5 class="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest text-left">Service</h5>
+                    <ul class="space-y-4 text-sm text-gray-700 font-medium text-left">
+                        <li><a href="{{ route('saas.pricing') }}" class="hover:text-pink-500 transition-colors">Pricing</a></li>
                     </ul>
-                </div>
-
-                <div>
-                    <h5 class="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest">Support</h5>
-                    <ul class="space-y-4 text-sm text-gray-500 font-medium">
-                        <li><a href="#" class="hover:text-pink-500 transition-colors">Help Center</a></li>
-                        <li><a href="#" class="hover:text-pink-500 transition-colors">Contact Us</a></li>
-                        <li><a href="#" class="hover:text-pink-500 transition-colors">Privacy Policy</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h5 class="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest">Stay Updated</h5>
-                    <div class="flex">
-                        <input type="email" placeholder="Email Address"
-                            class="bg-gray-50 border-none rounded-l-xl px-4 py-3 text-sm focus:ring-2 focus:ring-pink-500 w-full">
-                        <button class="bg-glow px-4 rounded-r-xl text-white">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                            </svg>
-                        </button>
-                    </div>
                 </div>
             </div>
 
-            <div class="pt-8 border-t border-gray-50 text-center">
-                <p class="text-xs font-bold text-gray-300 uppercase tracking-widest">&copy; 2026 GlowGym Management
+            <div class="pt-8 border-t border-pink-200 text-center">
+                <p class="text-xs font-bold text-gray-900 uppercase tracking-widest">&copy; 2026 GlowGym Management
                     System. All Rights Reserved.</p>
             </div>
         </div>

@@ -28,6 +28,11 @@ class SuperAdminSaaSTest extends TestCase
 
         config(['services.stripe.secret' => null]);
 
+        // Truncate MongoDB collections for test isolation
+        foreach (['gym_analytics', 'payment_logs', 'booking_metrics', 'login_activity'] as $col) {
+            MongoDBService::collection($col)->deleteMany([]);
+        }
+
         // Create gym
         $this->gym = Gym::create([
             'name' => 'GlowGym Central',
@@ -190,14 +195,14 @@ class SuperAdminSaaSTest extends TestCase
         Queue::assertPushed(SendSuperAdminSubscriptionNotificationEmail::class);
 
         // Check MongoDB mock analytics
-        $subLog = MongoDBService::collection('subscription_analytics')->find([
+        $subLog = MongoDBService::collection('gym_analytics')->find([
             'gym_id' => $this->gym->id,
             'status' => 'active'
         ]);
         $this->assertCount(1, $subLog);
         $this->assertEquals('Professional', $subLog[0]['plan']);
 
-        $revLog = MongoDBService::collection('gym_revenue_analytics')->find([
+        $revLog = MongoDBService::collection('payment_logs')->find([
             'gym_id' => $this->gym->id
         ]);
         $this->assertCount(1, $revLog);
@@ -229,7 +234,7 @@ class SuperAdminSaaSTest extends TestCase
         Queue::assertNotPushed(SendSuperAdminSubscriptionNotificationEmail::class);
 
         // Check MongoDB mock analytics
-        $failedLog = MongoDBService::collection('subscription_analytics')->find([
+        $failedLog = MongoDBService::collection('gym_analytics')->find([
             'gym_id' => $this->gym->id,
             'status' => 'failed'
         ]);
@@ -271,7 +276,7 @@ class SuperAdminSaaSTest extends TestCase
             'subscription_expires_at' => now()->addMonth(),
         ]);
 
-        MongoDBService::collection('subscription_analytics')->insertOne([
+        MongoDBService::collection('gym_analytics')->insertOne([
             'gym_id' => $this->gym->id,
             'gym_name' => $this->gym->name,
             'plan' => 'Professional',
@@ -295,19 +300,19 @@ class SuperAdminSaaSTest extends TestCase
     public function test_sanctum_analytics_api_and_mongodb_aggregations(): void
     {
         // Seed MongoDB mock collections
-        MongoDBService::collection('booking_statistics')->insertMany([
+        MongoDBService::collection('booking_metrics')->insertMany([
             ['gym_name' => 'GlowGym Central', 'class_name' => 'Yoga 101'],
             ['gym_name' => 'GlowGym Central', 'class_name' => 'Yoga 101'],
             ['gym_name' => 'GlowGym North', 'class_name' => 'HIIT Blast'],
             ['gym_name' => 'GlowGym North', 'class_name' => 'Yoga 101'],
         ]);
 
-        MongoDBService::collection('gym_revenue_analytics')->insertMany([
+        MongoDBService::collection('payment_logs')->insertMany([
             ['amount' => 59.00, 'created_at' => '2026-05-01 10:00:00'],
             ['amount' => 29.00, 'created_at' => '2026-05-15 12:00:00'],
         ]);
 
-        MongoDBService::collection('subscription_analytics')->insertMany([
+        MongoDBService::collection('gym_analytics')->insertMany([
             ['plan' => 'Starter'],
             ['plan' => 'Professional'],
             ['plan' => 'Professional'],
@@ -322,8 +327,11 @@ class SuperAdminSaaSTest extends TestCase
 
         // 1. Top gyms: GlowGym Central should have 2 bookings, GlowGym North should have 2 bookings
         $this->assertNotEmpty($data['top_gyms']);
-        $this->assertEquals('GlowGym Central', $data['top_gyms'][0]['_id']);
-        $this->assertEquals(2, $data['top_gyms'][0]['bookings_count']);
+        $gymBookings = collect($data['top_gyms'])->pluck('bookings_count', '_id')->toArray();
+        $this->assertArrayHasKey('GlowGym Central', $gymBookings);
+        $this->assertEquals(2, $gymBookings['GlowGym Central']);
+        $this->assertArrayHasKey('GlowGym North', $gymBookings);
+        $this->assertEquals(2, $gymBookings['GlowGym North']);
 
         // 2. Popular classes: Yoga 101 should have 3 bookings
         $this->assertNotEmpty($data['popular_classes']);

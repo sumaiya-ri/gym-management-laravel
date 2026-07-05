@@ -73,5 +73,11 @@
             @endforelse
         </tbody>
     </table>
+    
+    @if($timeslots->hasPages())
+        <div class="px-8 py-5 border-t border-gray-100 bg-gray-50/20">
+            {{ $timeslots->links() }}
+        </div>
+    @endif
 </div>
 @endsection

@@ -150,7 +150,7 @@ class SaasSubscriptionController extends Controller
             Log::error("SaaS Subscription Payment Failed: Simulated decline for Gym ID: {$gym->id} on Plan: {$plan}");
 
             // Store failed transaction analytics in mock MongoDB
-            MongoDBService::collection('subscription_analytics')->insertOne([
+            MongoDBService::collection('gym_analytics')->insertOne([
                 'gym_id' => $gym->id,
                 'gym_name' => $gym->name,
                 'plan' => $plan,
@@ -174,7 +174,7 @@ class SaasSubscriptionController extends Controller
         ]);
 
         // Write Successful transactions to mock MongoDB
-        MongoDBService::collection('subscription_analytics')->insertOne([
+        MongoDBService::collection('gym_analytics')->insertOne([
             'gym_id' => $gym->id,
             'gym_name' => $gym->name,
             'plan' => $plan,
@@ -184,7 +184,7 @@ class SaasSubscriptionController extends Controller
             'created_at' => now()->toDateTimeString(),
         ]);
 
-        MongoDBService::collection('gym_revenue_analytics')->insertOne([
+        MongoDBService::collection('payment_logs')->insertOne([
             'gym_id' => $gym->id,
             'gym_name' => $gym->name,
             'amount' => $price,
@@ -194,7 +194,7 @@ class SaasSubscriptionController extends Controller
         ]);
 
         // Update platform growth metrics in MongoDB
-        MongoDBService::collection('platform_growth_metrics')->insertOne([
+        MongoDBService::collection('gym_analytics')->insertOne([
             'gyms_count' => Gym::count(),
             'members_count' => User::where('role', 'member')->count(),
             'trainers_count' => User::where('role', 'trainer')->count(),
@@ -251,7 +251,7 @@ class SaasSubscriptionController extends Controller
                     ]);
 
                     // MongoDB logs
-                    MongoDBService::collection('subscription_analytics')->insertOne([
+                    MongoDBService::collection('gym_analytics')->insertOne([
                         'gym_id' => $gym->id,
                         'gym_name' => $gym->name,
                         'plan' => $plan,
@@ -261,7 +261,7 @@ class SaasSubscriptionController extends Controller
                         'created_at' => now()->toDateTimeString(),
                     ]);
 
-                    MongoDBService::collection('gym_revenue_analytics')->insertOne([
+                    MongoDBService::collection('payment_logs')->insertOne([
                         'gym_id' => $gym->id,
                         'gym_name' => $gym->name,
                         'amount' => $price,
@@ -270,7 +270,7 @@ class SaasSubscriptionController extends Controller
                         'created_at' => now()->toDateTimeString(),
                     ]);
 
-                    MongoDBService::collection('platform_growth_metrics')->insertOne([
+                    MongoDBService::collection('gym_analytics')->insertOne([
                         'gyms_count' => Gym::count(),
                         'members_count' => User::where('role', 'member')->count(),
                         'trainers_count' => User::where('role', 'trainer')->count(),
